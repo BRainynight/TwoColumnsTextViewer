@@ -11,8 +11,7 @@ def get_args():
     options = parser.parse_args()
     return options
 
-def main(args):
-    
+def main(args):    
     fromfile = args.fromfile
     tofile = args.tofile
 
@@ -20,3 +19,7 @@ def main(args):
         get_diff_text(fromfile, tofile, stdout=True)
     else:
         curses.wrapper(get_win, fromfile, tofile)
+
+if __name__=="__main__":
+    args = get_args()
+    main(args)
