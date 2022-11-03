@@ -1,5 +1,5 @@
 import argparse
-import curses.ascii
+import curses
 import sys
 import difflib
 import textwrap
@@ -13,6 +13,12 @@ def read_file_lines(fp):
     f = open(fp, "r", encoding="utf-8")
     return f.readlines()
 
+def color_256_to_1000(color256):
+    color1000 = []
+    for c in color256:
+        color1000.append(int(c/256*1000))
+    return color1000
+
 def set_color():
     '''
     0:black, 1:red, 2:green, 3:yellow, 4:blue, 5:magenta, 6:cyan, and 7:white
@@ -25,6 +31,16 @@ def set_color():
     curses.init_pair(Status.is_del, curses.COLOR_RED, default)
     curses.init_pair(Status.is_add, curses.COLOR_GREEN, default)
     curses.init_pair(Status.is_diff, curses.COLOR_YELLOW, default)
+    curses.init_pair(Status.is_hightlight_file_name, curses.COLOR_CYAN, default)
+
+    if curses.can_change_color():
+        curses.init_color(50, *color_256_to_1000([118,215,208]))
+        curses.init_color(51, *color_256_to_1000([219,245,243]))
+        curses.init_color(52, *color_256_to_1000([255,69,69]))  # pink
+
+        curses.init_pair(Status.is_hightlight_file_name, 50, default)
+        curses.init_pair(Status.is_del, 52, default)
+        pass
 
 def resize_win(win, lines, width, delta_y=0, delta_x=0):
     win.resize(lines, width)
@@ -46,10 +62,14 @@ def update_text(win, buf, status=False, max_col=None):
             if status:
                 s, l = line
                 s = 0 if s <0 or s==4 else s
-                if max_col is None:
-                    win.write(row, 0, l, curses.color_pair(s))
+                if s == Status.is_hightlight_file_name:
+                    style = curses.color_pair(s) | curses.A_BOLD
                 else:
-                    win.write(row, 0, textwrap.shorten(l, max_col, placeholder="..."), curses.color_pair(s))
+                    style = curses.color_pair(s)
+                if max_col is None:
+                    win.write(row, 0, l, style)
+                else:
+                    win.write(row, 0, textwrap.shorten(l, max_col, placeholder="..."), style)
             else:
                 win.write(row, 0, line)
         win.refresh()
@@ -94,19 +114,19 @@ def get_win(stdscr, fromfile, tofile):
         k = stdscr.getkey()
         if k == "q":
             sys.exit(0)
-        elif k == "KEY_UP":
+        elif k == "KEY_UP" or k== "k":
             cursor.up(bufr)
             winr.up(cursor)
             winl.up(cursor)
-        elif k == "KEY_DOWN":
+        elif k == "KEY_DOWN" or k== "j":
             cursor.down(bufr)
             winr.down(bufr, cursor)
             winl.down(bufl, cursor)
             
-        elif k == "KEY_LEFT":
+        elif k == "KEY_LEFT" or k== "h":
             cursor.left(bufr)
             winr.up(cursor)
-        elif k == "KEY_RIGHT":
+        elif k == "KEY_RIGHT" or k== "l":
             cursor.right(bufr)
             winr.down(bufr, cursor)
         elif k == "KEY_RESIZE":

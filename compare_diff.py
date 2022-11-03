@@ -5,17 +5,23 @@ class Status:
     is_add  = 2
     is_diff = 3
     is_content = 4
-    is_file = -1
+    is_file = -1        # the file infomation in result of context_diff
     is_section = -2
     is_lineno = -3
+    is_hightlight_file_name = 10
 
 class Block:
     def __init__(self, index) -> None:
         self.index = index
+        self.line_range = tuple()
         self.lt = []
     
     def add_content(self, status, content):
         self.lt.append((status, content))
+    
+    def add_line_range(self, line_range: tuple):
+        self.line_range = line_range
+
    
 class Content:
     def __init__(self, before, title="") -> None:
@@ -28,6 +34,9 @@ class Content:
         b = Block(self.block_ind)
         self.container.append(b)
         self.block_ind += 1
+    
+    def add_line_range(self, line_range):
+        self.container[-1].add_line_range(line_range)
 
     def add_content(self, status, content):
         self.container[-1].add_content(status, content)
@@ -104,9 +113,21 @@ def container_to_status_and_text_list(c: Content, num):
     Return style : [(status, text), (status, text), (status, text), ...]
     '''
     text_lt = []
-    text_lt.append((Status.none, c.title))
+    if c.is_before:
+        title = f"Compare from file {c.title}"
+    else:
+        title = f"To file {c.title}"
+    text_lt.append((Status.is_hightlight_file_name, title))
     text_lt.append((Status.none, "="*num))
+    num -= 2
     for block in c.container:
+        if len(block.line_range) == 2:
+            str_line_range = f" L{block.line_range[0].zfill(4)} ~ L{block.line_range[1].zfill(4)}"
+        elif len(block.line_range) == 1:
+            str_line_range = f" L{block.line_range[0]}"
+        str_line_range = "#"*10+ str_line_range
+        
+        text_lt.append((Status.is_hightlight_file_name, str_line_range))
         text_lt += block.lt
         text_lt.append((Status.none, "="*num))
     return text_lt
@@ -125,6 +146,14 @@ def fill_blank_line(before_c:Content, after_c:Content):
     else:
         return before_c, after_c    
     return before_c, after_c
+
+def get_line_no(line):
+    prefix = line[0]
+    ss = line.replace(prefix, "")
+    ss = ss.replace(" ", "")
+    ss = ss.replace("\n", "")
+    lt = ss.split(",")
+    return tuple(lt)
 
 def parse_diff_content(g, fromfile="", tofile=""):
     '''
@@ -149,6 +178,11 @@ def parse_diff_content(g, fromfile="", tofile=""):
             before_content.new_section()
             after_content.new_section()
             continue
+        
+        if s== Status.is_lineno:
+            line_range = get_line_no(l)
+            holden_content.add_line_range(line_range)
+
 
         if s in [Status.is_content, Status.is_del, Status.is_add, Status.is_diff]:
             holden_content.add_content(s, l)
