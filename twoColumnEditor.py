@@ -82,22 +82,7 @@ def get_win(stdscr, fromfile, tofile):
     curses.echo()
     set_color()
 
-    lines = int(curses.LINES - 1)
-    columns = int(curses.COLS - 1)
-    half_width = int(columns / 2) -2
-    delta_y, delta_x = 0, half_width+2
-
-    winl, winr, cursor = create_wins(stdscr, lines, half_width, delta_y, delta_x)
-    g = get_diff_text(fromfile, tofile, stdout=False)
-    before, after = parse_diff_content(g, fromfile=fromfile, tofile=tofile)
-
-    status = True
-    if status:
-        bufl = Buffer(container_to_status_and_text_list(before, half_width))
-        bufr = Buffer(container_to_status_and_text_list(after, half_width))
-    else:
-        bufl = Buffer(container_to_plain_text(before))
-        bufr = Buffer(container_to_plain_text(after))
+    half_width, winl, winr, cursor, status, bufl, bufr = initialize(stdscr, fromfile, tofile)
 
     control_win = winr.curses_win
     while True:
@@ -130,7 +115,29 @@ def get_win(stdscr, fromfile, tofile):
             cursor.right(bufr)
             winr.down(bufr, cursor)
         elif k == "KEY_RESIZE":
-            pass
+            curses.update_lines_cols()
+            half_width, winl, winr, cursor, status, bufl, bufr = initialize(stdscr, fromfile, tofile)
+
+
+            
+def initialize(stdscr, fromfile, tofile):
+    lines = int(curses.LINES - 1)
+    columns = int(curses.COLS - 1)
+    half_width = int(columns / 2) -2
+    delta_y, delta_x = 0, half_width+2
+
+    winl, winr, cursor = create_wins(stdscr, lines, half_width, delta_y, delta_x)
+    g = get_diff_text(fromfile, tofile, stdout=False)
+    before, after = parse_diff_content(g, fromfile=fromfile, tofile=tofile)
+
+    status = True
+    if status:
+        bufl = Buffer(container_to_status_and_text_list(before, half_width))
+        bufr = Buffer(container_to_status_and_text_list(after, half_width))
+    else:
+        bufl = Buffer(container_to_plain_text(before))
+        bufr = Buffer(container_to_plain_text(after))
+    return half_width,winl,winr,cursor,status,bufl,bufr
 
 def get_diff_text(fromfile, tofile, stdout=False):
     s1 = read_file_lines(fromfile)
@@ -146,4 +153,9 @@ if __name__ == "__main__":
     file = "line_compare.txt"
     fromfile = os.path.join(path1, file)
     tofile = os.path.join(path2, file)
-    curses.wrapper(get_win, fromfile, tofile)
+
+    while True:
+        try:
+            curses.wrapper(get_win, fromfile, tofile)
+        except ValueError:
+            curses.wrapper(get_win, fromfile, tofile)

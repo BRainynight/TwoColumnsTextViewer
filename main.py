@@ -27,6 +27,7 @@ def main(args=None):
         get_diff_text(fromfile, tofile, stdout=True)
     else:
         curses.wrapper(get_win, fromfile, tofile)
+        curses.endwin()
 
 if __name__=="__main__":
     args = get_args()
