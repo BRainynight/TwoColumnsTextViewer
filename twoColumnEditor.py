@@ -69,7 +69,10 @@ def update_text(win, buf, status=False, max_col=None):
                 if max_col is None:
                     win.write(row, 0, l, style)
                 else:
-                    win.write(row, 0, textwrap.shorten(l, max_col, placeholder="..."), style)
+                    warpped_text = textwrap.wrap(l, width=max_col, placeholder="...", 
+                              replace_whitespace=False, drop_whitespace=False,fix_sentence_endings=True,
+                              )
+                    win.write(row, 0, warpped_text[0], style)
             else:
                 win.write(row, 0, line)
         win.refresh()

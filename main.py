@@ -31,4 +31,7 @@ def main(args=None):
 
 if __name__=="__main__":
     args = get_args()
-    main(args)
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        print("User Interrupt")
