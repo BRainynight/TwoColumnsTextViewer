@@ -117,7 +117,7 @@ def get_win(stdscr, fromfile, tofile):
         elif k == "KEY_RIGHT" or k== "l":
             cursor.right(bufr)
             winr.down(bufr, cursor)
-        elif k == "KEY_RESIZE":
+        elif k == "KEY_RESIZE" or k== "r":
             curses.update_lines_cols()
             half_width, winl, winr, cursor, status, bufl, bufr = initialize(stdscr, fromfile, tofile)
 

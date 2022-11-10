@@ -1,18 +1,20 @@
 ## Description
+A simple text viewer for viewing differences between 2 files.
 
-This project can run on MobaXterm terminal and may not work on VS code terminal. 
 
 ## Screenshot
-
 ![Example](img/README/Example.png)
 
 ## Update Logs
-
-- 2022/11/13: 
+- 2022/11/10: 
+  - Handle keyboard interrupt exception and resize event. 
+  - Keep tab spacing in viewer.
+  - Press `r` can refresh comparsion. 
+- 2022/11/03: 
   - Enable vim-style arrow keys (`k`, `j`, `h`, `l`). For my VS code terminal (Powershell) , the keyboard arrow keys is unable because its return value of `getkey()` is differ from [the official key list](https://docs.python.org/3.8/library/curses.html#curses.ncurses_version).
   - Add file name in the top of viewer.
   - Add the line number range for each block. 
-  - Add the argument `reverse ` in CLI.
+  - Add the argument `reverse` in CLI.
 
 
 
