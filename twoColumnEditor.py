@@ -1,8 +1,6 @@
-import argparse
 import curses
 import sys
 import difflib
-import textwrap
 
 import os
 from control_class import Buffer, Cursor, Window
@@ -18,6 +16,13 @@ def color_256_to_1000(color256):
     for c in color256:
         color1000.append(int(c/256*1000))
     return color1000
+
+def cutoff_long_word(s, width):
+    if len(s) <= width:
+        return s
+    cutoff_s = s[:width-5]
+    cutoff_s += "..."
+    return cutoff_s
 
 def set_color():
     '''
@@ -69,10 +74,8 @@ def update_text(win, buf, status=False, max_col=None):
                 if max_col is None:
                     win.write(row, 0, l, style)
                 else:
-                    warpped_text = textwrap.wrap(l, width=max_col, placeholder="...", 
-                              replace_whitespace=False, drop_whitespace=False,fix_sentence_endings=True,
-                              )
-                    win.write(row, 0, warpped_text[0], style)
+                    cutoff = cutoff_long_word(l, max_col)
+                    win.write(row, 0, cutoff, style)
             else:
                 win.write(row, 0, line)
         win.refresh()
