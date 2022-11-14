@@ -78,18 +78,17 @@ class Cursor:
             self._clamp_col(buffer)
 
     def _clamp_col(self, buffer):        
-        self.col = min(self.col, len(buffer[self.row]))
+        self.col = min(self.col, len(buffer[self.row][1]))
 
     def left(self, buffer):
         if self.col > 0:
             self.col -= 1
         elif self.row > 0:
             self.row -= 1
-            self.col = len(buffer[self.row])
+            self.col = len(buffer[self.row][1])
 
     def right(self, buffer):
-        # print(self.col, len(buffer[self.row]))
-        if self.col < len(buffer[self.row]):
+        if self.col < len(buffer[self.row][1]):
             self.col += 1
         elif self.row < buffer.bottom:
             self.row += 1
